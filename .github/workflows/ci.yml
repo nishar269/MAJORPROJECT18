@@ -37,5 +37,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+    - name: Check Environment
+      run: |
+        docker --version
+        docker compose version
     - name: Build the Docker images
-      run: docker-compose build
+      run: docker compose build
