@@ -4,7 +4,7 @@ import {
   Users, RefreshCw, Target, Activity, Search, Navigation, 
   Flame, Map as MapIcon, Layers, ShieldAlert, Eye, EyeOff
 } from 'lucide-react';
-import { touristAPI } from '../services/api';
+import { touristAPI, geofenceAPI } from '../services/api';
 import useStore from '../store/useStore';
 import { emitLocationUpdate } from '../services/socket';
 
@@ -18,16 +18,23 @@ export default function MapPage() {
   const googleMapRef = useRef(null);
   const heatmapLayerRef = useRef(null);
   const markersRef = useRef([]);
+  const [showGeofences, setShowGeofences] = useState(true);
+  const [geofences, setGeofences] = useState([]);
+  const geofenceCirclesRef = useRef([]);
 
   const { user } = useStore();
 
-  // BITS Visakhapatnam Center (User context)
-  const BITS_CENTER = { lat: 17.8931, lng: 83.3364 };
+  // Delhi Center for Simulation
+  const MAP_CENTER = { lat: 28.6139, lng: 77.2090 };
 
   const fetchData = async () => {
     try {
-      const touristData = await touristAPI.getAll().catch(() => []);
+      const [touristData, zoneData] = await Promise.all([
+        touristAPI.getAll().catch(() => []),
+        geofenceAPI.getZones().catch(() => [])
+      ]);
       setTourists(touristData);
+      setGeofences(zoneData);
     } catch (err) {
       console.error('Data error:', err);
     } finally {
@@ -45,8 +52,8 @@ export default function MapPage() {
   useEffect(() => {
     if (!loading && window.google && !googleMapRef.current) {
       const gMap = new window.google.maps.Map(mapRef.current, {
-        center: BITS_CENTER,
-        zoom: 16,
+        center: MAP_CENTER,
+        zoom: 14,
         disableDefaultUI: false,
         backgroundColor: '#020617',
         styles: [
@@ -72,13 +79,17 @@ export default function MapPage() {
     }
   }, [loading]);
 
-  // Handle Markers & Heatmap
+  // Handle Markers, Heatmap & Geofences
   useEffect(() => {
     if (!googleMapRef.current || !window.google) return;
 
     // Clear old markers
     markersRef.current.forEach(m => m.setMap(null));
     markersRef.current = [];
+
+    // Clear old geofences
+    geofenceCirclesRef.current.forEach(c => c.setMap(null));
+    geofenceCirclesRef.current = [];
 
     if (showMarkers) {
       tourists.forEach(t => {
@@ -107,6 +118,33 @@ export default function MapPage() {
 
         marker.addListener('click', () => infoWindow.open(googleMapRef.current, marker));
         markersRef.current.push(marker);
+      });
+    }
+
+    // Render Geofences
+    if (showGeofences) {
+      geofences.forEach(zone => {
+        const color = zone.riskLevel === 'high' ? '#f43f5e' : zone.riskLevel === 'medium' ? '#fbbf24' : '#10b981';
+        const circle = new window.google.maps.Circle({
+          strokeColor: color,
+          strokeOpacity: 0.8,
+          strokeWeight: 2,
+          fillColor: color,
+          fillOpacity: 0.15,
+          map: googleMapRef.current,
+          center: { lat: zone.lat, lng: zone.lng },
+          radius: zone.radius,
+          clickable: true
+        });
+
+        const tooltip = new window.google.maps.InfoWindow({
+          content: `<div style="color:#333; padding:5px; font-size:10px; font-weight:bold;">${zone.zone.toUpperCase()} (${zone.riskLevel} risk)</div>`
+        });
+
+        circle.addListener('mouseover', (e) => tooltip.open(googleMapRef.current, circle));
+        circle.addListener('mouseout', () => tooltip.close());
+
+        geofenceCirclesRef.current.push(circle);
       });
     }
 
@@ -150,7 +188,7 @@ export default function MapPage() {
       }
     }
 
-  }, [tourists, showMarkers, showHeatmap]);
+  }, [tourists, geofences, showMarkers, showHeatmap, showGeofences]);
 
   return (
     <div className="h-[calc(100vh-10rem)] flex flex-col gap-6 font-body relative">
@@ -182,6 +220,13 @@ export default function MapPage() {
             >
                {showMarkers ? <Eye size={18} /> : <EyeOff size={18} />}
                <span className="text-[10px] font-black uppercase tracking-widest">{showMarkers ? 'Markers: Visible' : 'Markers: Hidden'}</span>
+            </button>
+            <button 
+              onClick={() => setShowGeofences(!showGeofences)}
+              className={`glass-card p-4 flex items-center gap-3 pointer-events-auto transition-all border ${showGeofences ? 'bg-primary-600 text-white border-white/20' : 'bg-dark-900/90 text-dark-400 border-white/5'}`}
+            >
+               <ShieldAlert size={18} className={showGeofences ? 'text-primary-400' : ''} />
+               <span className="text-[10px] font-black uppercase tracking-widest">{showGeofences ? 'Zones: Visible' : 'Zones: Hidden'}</span>
             </button>
          </div>
       </div>
