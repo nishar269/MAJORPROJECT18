@@ -28,9 +28,9 @@ export default function AnomalyPage() {
   const fetchAnomalies = async () => {
     try {
       const data = await aiAPI.getAnomalies();
-      setAnomalies(data);
+      setAnomalies(Array.isArray(data) ? data : []);
     } catch {
-      // Keep existing
+      setAnomalies([]);
     } finally {
       setLoadingAnomalies(false);
     }

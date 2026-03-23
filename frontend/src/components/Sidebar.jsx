@@ -92,23 +92,27 @@ export default function Sidebar() {
                 }`
               }
             >
-              <div className="flex items-center gap-4 relative z-10">
-                <item.icon size={22} className={`transition-all duration-500 ${
-                    isActive ? 'text-primary-400 scale-110' : 'group-hover:text-primary-400 group-hover:scale-110'
-                }`} />
-                <span className={`tracking-tight ${isActive ? 'translate-x-1' : 'group-hover:translate-x-1'} transition-transform duration-500`}>
-                  {item.label}
-                </span>
-              </div>
-              
-              {isActive && (
-                <motion.div layoutId="activeNav" className={`absolute inset-0 bg-gradient-to-r ${panicActive ? 'from-danger-500/10' : 'from-primary-500/10'} to-transparent opacity-100`} />
-              )}
+              {({ isActive }) => (
+                <>
+                  <div className="flex items-center gap-4 relative z-10">
+                    <item.icon size={22} className={`transition-all duration-500 ${
+                        isActive ? 'text-primary-400 scale-110' : 'group-hover:text-primary-400 group-hover:scale-110'
+                    }`} />
+                    <span className={`tracking-tight ${isActive ? 'translate-x-1' : 'group-hover:translate-x-1'} transition-transform duration-500`}>
+                      {item.label}
+                    </span>
+                  </div>
+                  
+                  {isActive && (
+                    <motion.div layoutId="activeNav" className={`absolute inset-0 bg-gradient-to-r ${panicActive ? 'from-danger-500/10' : 'from-primary-500/10'} to-transparent opacity-100`} />
+                  )}
 
-              {item.label === 'Alerts' && unreadCount > 0 && (
-                <span className="relative z-10 flex items-center justify-center min-w-[24px] h-[24px] px-2 rounded-lg bg-primary-500 text-white text-[10px] font-black shadow-glow-blue">
-                  {unreadCount}
-                </span>
+                  {item.label === 'Alerts' && unreadCount > 0 && (
+                    <span className="relative z-10 flex items-center justify-center min-w-[24px] h-[24px] px-2 rounded-lg bg-primary-500 text-white text-[10px] font-black shadow-glow-blue">
+                      {unreadCount}
+                    </span>
+                  )}
+                </>
               )}
             </NavLink>
           ))}

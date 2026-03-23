@@ -38,27 +38,35 @@ export default function DashboardPage() {
   ]);
   const { setAlerts } = useStore();
   const [loading, setLoading] = useState(true);
+  const [dashboardData, setDashboardData] = useState({ tourists: [], alerts: [], status: {} });
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const [tourists, alerts, status] = await Promise.all([
+        const [touristsResult, alertsResult, statusResult] = await Promise.all([
           touristAPI.getAll().catch(() => []),
           alertsAPI.getAll().catch(() => []),
-          statusAPI.getStatus().catch(() => null),
+          statusAPI.getSystemStatus().catch(() => ({})),
         ]);
 
-        setAlerts(alerts);
+        const newDashboardData = {
+          tourists: Array.isArray(touristsResult) ? touristsResult : [],
+          alerts: Array.isArray(alertsResult) ? alertsResult : [],
+          status: statusResult || {},
+        };
+        setDashboardData(newDashboardData);
+
+        setAlerts(newDashboardData.alerts);
         setStats([
-          { label: 'Active Personnel', value: tourists.length.toString(), icon: Users, color: 'from-primary-500 to-primary-600', shadow: 'shadow-glow-blue' },
-          { label: 'Live Alerts', value: alerts.filter(a => a.severity === 'critical').length.toString(), icon: Bell, color: 'from-warning-400 to-warning-500', shadow: 'shadow-glow-yellow' },
+          { label: 'Active Personnel', value: newDashboardData.tourists.length.toString(), icon: Users, color: 'from-primary-500 to-primary-600', shadow: 'shadow-glow-blue' },
+          { label: 'Live Alerts', value: newDashboardData.alerts.filter(a => a.severity === 'critical').length.toString(), icon: Bell, color: 'from-warning-400 to-warning-500', shadow: 'shadow-glow-yellow' },
           { label: 'Safe Sectors', value: '12', icon: MapPin, color: 'from-success-400 to-success-500', shadow: 'shadow-glow-green' },
-          { label: 'AI Detections', value: alerts.filter(a => a.message.includes('AI')).length.toString(), icon: Activity, color: 'from-accent-500 to-accent-600', shadow: 'shadow-glow-red' },
+          { label: 'AI Detections', value: newDashboardData.alerts.filter(a => a.message.includes('AI')).length.toString(), icon: Activity, color: 'from-accent-500 to-accent-600', shadow: 'shadow-glow-red' },
         ]);
 
-        setRecentAlerts(alerts.slice(0, 5));
+        setRecentAlerts(newDashboardData.alerts.slice(0, 5));
 
-        if (status) {
+        if (newDashboardData.status) {
           setSystemStatus([
             { label: 'Neural Mesh', status: 'Operational', ok: true },
             { label: 'Sentinel AI', status: 'Tracking', ok: true },

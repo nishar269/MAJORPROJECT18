@@ -60,7 +60,7 @@ export default function LandingPage() {
           >
             The Next Generation of <br/>
             <span className="text-gradient">Tourist Intelligence.</span>
-          </h1 >
+          </motion.h1>
           
           <motion.p 
             initial={{ opacity: 0, y: 20 }}
