@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  # Backend API (Node.js)
+  backend:
+    build: ./backend
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - JWT_SECRET=toursafe_ultra_secret_key_2026
+      - AI_SERVICE_URL=http://ai-service:8000
+    depends_on:
+      - ai-service
+    networks:
+      - toursafe-network
+
+  # AI Anomaly Engine (Python FastAPI)
+  ai-service:
+    build: ./ai-service
+    ports:
+      - "8000:8000"
+    networks:
+      - toursafe-network
+
+  # Frontend PWA (Vite/React)
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:5173"
+    stdin_open: true
+    tty: true
+    networks:
+      - toursafe-network
+
+networks:
+  toursafe-network:
+    driver: bridge
