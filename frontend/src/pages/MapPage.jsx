@@ -55,18 +55,30 @@ export default function MapPage() {
         center: MAP_CENTER,
         zoom: 14,
         disableDefaultUI: false,
-        backgroundColor: '#020617',
+        mapTypeControl: true, // Allow users to switch to Satellite
+        mapTypeControlOptions: {
+          style: window.google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+          position: window.google.maps.ControlPosition.TOP_RIGHT,
+        },
         styles: [
-          { "elementType": "geometry", "stylers": [{ "color": "#1e293b" }] },
-          { "elementType": "labels.text.fill", "stylers": [{ "color": "#94a3b8" }] },
-          { "elementType": "labels.text.stroke", "stylers": [{ "color": "#020617" }] },
-          { "featureType": "administrative", "elementType": "geometry", "stylers": [{ "color": "#334155" }] },
-          { "featureType": "poi", "elementType": "labels.text.fill", "stylers": [{ "color": "#3b82f6" }] },
-          { "featureType": "road", "elementType": "geometry", "stylers": [{ "color": "#334155" }] },
-          { "featureType": "road", "elementType": "geometry.stroke", "stylers": [{ "color": "#1e293b" }] },
-          { "featureType": "road.highway", "elementType": "geometry", "stylers": [{ "color": "#3b82f6" }] },
-          { "featureType": "transit", "elementType": "geometry", "stylers": [{ "color": "#334155" }] },
-          { "featureType": "water", "elementType": "geometry", "stylers": [{ "color": "#0f172a" }] }
+          { "elementType": "geometry", "stylers": [{ "color": "#f5f5f5" }] },
+          { "elementType": "labels.icon", "stylers": [{ "visibility": "on" }] },
+          { "elementType": "labels.text.fill", "stylers": [{ "color": "#616161" }] },
+          { "elementType": "labels.text.stroke", "stylers": [{ "color": "#f5f5f5" }] },
+          { "featureType": "administrative.land_parcel", "elementType": "labels.text.fill", "stylers": [{ "color": "#bdbdbd" }] },
+          { "featureType": "poi", "elementType": "geometry", "stylers": [{ "color": "#eeeeee" }] },
+          { "featureType": "poi", "elementType": "labels.text.fill", "stylers": [{ "color": "#757575" }] },
+          { "featureType": "poi.park", "elementType": "geometry", "stylers": [{ "color": "#e5e5e5" }] },
+          { "featureType": "poi.park", "elementType": "labels.text.fill", "stylers": [{ "color": "#9e9e9e" }] },
+          { "featureType": "road", "elementType": "geometry", "stylers": [{ "color": "#ffffff" }] },
+          { "featureType": "road.arterial", "elementType": "labels.text.fill", "stylers": [{ "color": "#757575" }] },
+          { "featureType": "road.highway", "elementType": "geometry", "stylers": [{ "color": "#dadada" }] },
+          { "featureType": "road.highway", "elementType": "labels.text.fill", "stylers": [{ "color": "#616161" }] },
+          { "featureType": "road.local", "elementType": "labels.text.fill", "stylers": [{ "color": "#9e9e9e" }] },
+          { "featureType": "transit.line", "elementType": "geometry", "stylers": [{ "color": "#e5e5e5" }] },
+          { "featureType": "transit.station", "elementType": "geometry", "stylers": [{ "color": "#eeeeee" }] },
+          { "featureType": "water", "elementType": "geometry", "stylers": [{ "color": "#c9c9c9" }] },
+          { "featureType": "water", "elementType": "labels.text.fill", "stylers": [{ "color": "#9e9e9e" }] }
         ]
       });
       googleMapRef.current = gMap;
@@ -93,18 +105,27 @@ export default function MapPage() {
 
     if (showMarkers) {
       tourists.forEach(t => {
+        const color = t.status === 'danger' ? '#f43f5e' : t.status === 'warning' ? '#fbbf24' : '#10b981';
         const marker = new window.google.maps.Marker({
           position: { lat: t.lat, lng: t.lng },
           map: googleMapRef.current,
           title: t.name,
           animation: t.status !== 'safe' ? window.google.maps.Animation.BOUNCE : null,
           icon: {
-            path: window.google.maps.SymbolPath.CIRCLE,
-            fillColor: t.status === 'danger' ? '#f43f5e' : t.status === 'warning' ? '#fbbf24' : '#10b981',
+            path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z",
+            fillColor: color,
             fillOpacity: 1,
-            strokeWeight: 2,
-            strokeColor: '#fff',
-            scale: 8
+            strokeWeight: 1.5,
+            strokeColor: '#ffffff',
+            scale: 2,
+            anchor: new window.google.maps.Point(12, 22),
+            labelOrigin: new window.google.maps.Point(12, 9)
+          },
+          label: {
+            text: t.name.charAt(0),
+            color: '#FFFFFF',
+            fontSize: '10px',
+            fontWeight: 'bold'
           }
         });
 
@@ -233,7 +254,7 @@ export default function MapPage() {
 
       {/* Main Full-Size Map Canvas */}
       <div className="flex-1 relative rounded-[2rem] overflow-hidden shadow-2xl border border-white/10 bg-dark-950">
-        <div ref={mapRef} className="w-full h-full grayscale-[0.2] contrast-[1.1]" id="google-map" />
+        <div ref={mapRef} className="w-full h-full" id="google-map" />
         
         {!window.google && (
           <div className="absolute inset-0 flex items-center justify-center bg-dark-950 z-50">

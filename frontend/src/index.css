@@ -7,28 +7,28 @@
 /* ═══════════════════════════════════════════════════ */
 
 @theme {
-  --color-primary-400: #60a5fa;
-  --color-primary-500: #3b82f6;
-  --color-primary-600: #2563eb;
+  --color-primary-400: #38bdf8;
+  --color-primary-500: #0ea5e9;
+  --color-primary-600: #0284c7;
   
   --color-accent-400: #fb7185;
   --color-accent-500: #f43f5e;
   
-  --color-success-400: #34d399;
-  --color-success-500: #10b981;
+  --color-success-400: #4ade80;
+  --color-success-500: #22c55e;
 
   --color-warning-400: #fbbf24;
   --color-warning-500: #f59e0b;
 
-  --color-danger-400: #fb7185;
-  --color-danger-500: #f43f5e;
+  --color-danger-400: #f87171;
+  --color-danger-500: #ef4444;
 
   --color-dark-950: #020617;
-  --color-dark-900: #0f172a;
-  --color-dark-800: #1e293b;
-  --color-dark-700: #334155;
-  --color-dark-400: #94a3b8;
-  --color-dark-100: #f1f5f9;
+  --color-dark-900: #0a0f1e;
+  --color-dark-800: #141b2d;
+  --color-dark-700: #1e293b;
+  --color-dark-400: #64748b;
+  --color-dark-100: #f8fafc;
 
   --font-display: 'Outfit', 'Inter', system-ui, sans-serif;
   --font-body: 'Plus Jakarta Sans', system-ui, sans-serif;

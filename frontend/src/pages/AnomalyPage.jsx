@@ -22,6 +22,32 @@ export default function AnomalyPage() {
   const [testLng, setTestLng] = useState('77.2090');
   const [testResult, setTestResult] = useState(null);
   const [testing, setTesting] = useState(false);
+  const [anomalies, setAnomalies] = useState([]);
+  const [loadingAnomalies, setLoadingAnomalies] = useState(true);
+
+  const fetchAnomalies = async () => {
+    try {
+      const data = await aiAPI.getAnomalies();
+      setAnomalies(data);
+    } catch {
+      // Keep existing
+    } finally {
+      setLoadingAnomalies(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAnomalies();
+    // Real-time listener for AI events
+    import('../services/socket').then(({ onNewAlert }) => {
+       const u = onNewAlert(() => fetchAnomalies());
+       return () => u();
+    });
+    
+    // Polling fallback
+    const iv = setInterval(fetchAnomalies, 5000);
+    return () => clearInterval(iv);
+  }, []);
 
   const handleTest = async () => {
     setTesting(true);
@@ -197,42 +223,49 @@ export default function AnomalyPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {anomalyResults.map((a, i) => (
-            <motion.div
-              key={a.id}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4 + i * 0.1 }}
-              className={`p-6 rounded-3xl border transition-all hover:bg-white/[0.02] flex items-center justify-between group ${
-                a.status === 'active' ? 'border-danger-500/30 bg-danger-500/5' : 'border-white/5 bg-white/[0.01]'
-              }`}
-            >
-              <div className="flex items-center gap-5">
-                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all ${
-                  a.status === 'active' ? 'bg-danger-500 shadow-glow-red text-white' : 'bg-dark-800 text-dark-400 group-hover:bg-primary-600 group-hover:text-white group-hover:shadow-glow-blue'
-                }`}>
-                  <Activity size={24} className="group-hover:scale-110 transition-transform" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-3 mb-1.5">
-                    <p className="text-lg font-black text-white tracking-tight">{a.type}</p>
-                    <span className={`text-[10px] font-black px-2 py-0.5 rounded-full border ${a.status === 'active' ? 'bg-danger-500/20 text-danger-400 border-danger-500/20 animate-pulse' : 'bg-dark-800 text-dark-500 border-white/5'}`}>
-                      {a.status}
-                    </span>
+          {anomalies.length > 0 ? (
+            anomalies.map((a, i) => (
+              <motion.div
+                key={a.id}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.4 + i * 0.1 }}
+                className={`p-6 rounded-3xl border transition-all hover:bg-white/[0.02] flex items-center justify-between group ${
+                  a.status === 'active' ? 'border-danger-500/30 bg-danger-500/5' : 'border-white/5 bg-white/[0.01]'
+                }`}
+              >
+                <div className="flex items-center gap-5">
+                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all ${
+                    a.status === 'active' ? 'bg-danger-500 shadow-glow-red text-white' : 'bg-dark-800 text-dark-400 group-hover:bg-primary-600 group-hover:text-white group-hover:shadow-glow-blue'
+                  }`}>
+                    <Activity size={24} className="group-hover:scale-110 transition-transform" />
                   </div>
-                  <div className="flex items-center gap-2">
-                     <p className="text-[10px] font-black text-primary-400 uppercase tracking-widest">{a.userId}</p>
-                     <span className="w-1 h-1 rounded-full bg-dark-700" />
-                     <p className="text-[10px] text-dark-500 font-bold uppercase tracking-widest">{a.location} · {a.time}</p>
+                  <div>
+                    <div className="flex items-center gap-3 mb-1.5">
+                      <p className="text-lg font-black text-white tracking-tight">{a.type}</p>
+                      <span className={`text-[10px] font-black px-2 py-0.5 rounded-full border ${a.status === 'active' ? 'bg-danger-500/20 text-danger-400 border-danger-500/20' : 'bg-dark-800 text-dark-500 border-white/5'}`}>
+                        {a.status}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                       <p className="text-[10px] font-black text-primary-400 uppercase tracking-widest">{a.userId}</p>
+                       <span className="w-1 h-1 rounded-full bg-dark-700" />
+                       <p className="text-[10px] text-dark-500 font-bold uppercase tracking-widest">{a.location} · {new Date(a.time).toLocaleTimeString()}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="text-right">
-                <p className="text-[9px] font-black text-dark-500 uppercase tracking-widest mb-1.5">Confidence</p>
-                <p className={`text-xl font-black ${a.confidence > 80 ? 'text-danger-400' : 'text-warning-400'}`}>{a.confidence}%</p>
-              </div>
-            </motion.div>
-          ))}
+                <div className="text-right">
+                  <p className="text-[9px] font-black text-dark-500 uppercase tracking-widest mb-1.5">Confidence</p>
+                  <p className={`text-xl font-black ${a.confidence > 80 ? 'text-danger-400' : 'text-warning-400'}`}>{a.confidence}%</p>
+                </div>
+              </motion.div>
+            ))
+          ) : (
+            <div className="md:col-span-2 py-20 text-center glass-card border-white/5 bg-white/[0.01]">
+               <Activity size={32} className="mx-auto text-dark-800 mb-4 opacity-20" />
+               <p className="text-[10px] font-black text-dark-600 uppercase tracking-widest">Awaiting Behavioral Signatures...</p>
+            </div>
+          )}
         </div>
       </motion.div>
     </div>

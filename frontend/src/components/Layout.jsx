@@ -85,7 +85,7 @@ export default function Layout() {
       <Sidebar />
 
       {/* Main Content Area */}
-      <main className="flex-1 md:ml-72 min-h-screen transition-all duration-500">
+      <main className="flex-1 md:ml-80 min-h-screen transition-all duration-500">
         <div className="max-w-7xl mx-auto p-4 md:p-8 xl:p-10">
           <motion.div
             initial={{ opacity: 0, scale: 0.98 }}

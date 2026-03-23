@@ -20,9 +20,11 @@ async function updatePositions() {
         let jitter = 0.4;
 
         // Chance to enter anomaly state
-        if (Math.random() < 0.02 && t.state === 'normal') {
+        console.log(`\n🚀 FINAL CERTIFICATION RUN: High-Fidelity Simulator Active`);
+        const anomalyThreshold = 0.15; // Increased for demonstration
+        if (Math.random() < anomalyThreshold && t.state === 'normal') {
             t.state = 'anomalous';
-            console.log(`\n⚠️ ANOMALY: ${t.name} is moving erratically!`);
+            console.log(`\n⚠️ ANOMALY TRIGGERED: ${t.name} (Simulation Node)`);
         }
 
         if (t.state === 'anomalous') {

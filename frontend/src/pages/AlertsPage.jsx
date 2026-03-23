@@ -42,6 +42,16 @@ export default function AlertsPage() {
 
   useEffect(() => {
     fetchAlerts();
+    // Real-time listener
+    import('../services/socket').then(({ onNewAlert }) => {
+       const u = onNewAlert(() => {
+         fetchAlerts();
+       });
+       return () => u();
+    });
+
+    const iv = setInterval(fetchAlerts, 10000);
+    return () => clearInterval(iv);
   }, [filter]);
 
   const handleMarkRead = async (id) => {

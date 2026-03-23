@@ -119,6 +119,7 @@ export const aiAPI = {
       method: 'POST',
       body: JSON.stringify(data),
     }),
+  getAnomalies: () => request('/ai/anomalies'),
 };
 
 // ─── STATUS ─────────────────────────────────────

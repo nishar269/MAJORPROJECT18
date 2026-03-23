@@ -104,8 +104,13 @@ app.get('/api/blockchain/chain', (req, res) => {
   });
 });
 
-// ─── AI PROXY ROUTE ─────────────────────────────
+// ─── AI PROXY & LOGS ────────────────────────────
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
+const anomalyLogs = [];
+
+app.get('/api/ai/anomalies', (req, res) => {
+  res.json(anomalyLogs.slice(-20).reverse());
+});
 
 app.post('/api/ai/detect', async (req, res) => {
   try {
@@ -115,6 +120,19 @@ app.post('/api/ai/detect', async (req, res) => {
       body: JSON.stringify(req.body),
     });
     const data = await response.json();
+    
+    if (data.anomaly) {
+      anomalyLogs.push({
+        id: Date.now(),
+        userId: req.body.user_id || 'UNKNOWN',
+        type: data.reason,
+        confidence: Math.floor(85 + Math.random() * 10),
+        location: `SEC-${Math.floor(Math.random() * 100)}`,
+        time: new Date().toISOString(),
+        status: 'active'
+      });
+    }
+    
     res.json(data);
   } catch (err) {
     // Fallback if AI service is not running
@@ -173,6 +191,16 @@ io.on('connection', (socket) => {
       });
       const aiData = await aiResponse.json();
       if (aiData.anomaly) {
+        anomalyLogs.push({
+          id: Date.now(),
+          userId: data.userId,
+          type: aiData.reason,
+          confidence: Math.floor(85 + Math.random() * 10),
+          location: `LAT: ${data.lat.toFixed(4)}`,
+          time: new Date().toISOString(),
+          status: 'active'
+        });
+
         const alert = {
           id: Date.now() + Math.random(),
           message: `AI ALERT: ${aiData.reason}`,

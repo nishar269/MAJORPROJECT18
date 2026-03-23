@@ -74,6 +74,14 @@ export default function DashboardPage() {
     };
 
     fetchDashboardData();
+
+    // Real-time Update Signal
+    import('../services/socket').then(({ onNewAlert, onLocationUpdated }) => {
+       const u1 = onNewAlert(() => fetchDashboardData());
+       const u2 = onLocationUpdated(() => fetchDashboardData());
+       return () => { u1(); u2(); };
+    });
+
     const interval = setInterval(fetchDashboardData, 10000);
     return () => clearInterval(interval);
   }, []);
